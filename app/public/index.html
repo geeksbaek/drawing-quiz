@@ -1,0 +1,147 @@
+<!doctype html>
+
+<html>
+<head>
+  <title>드로잉 퀴즈</title>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+
+  <link rel="import" href="bower_components/iron-icons/iron-icons.html">
+  <link rel="import" href="bower_components/paper-toolbar/paper-toolbar.html">
+  <link rel="import" href="bower_components/font-roboto/roboto.html"> 
+  <link rel="import" href="bower_components/paper-button/paper-button.html">
+  <link rel="import" href="bower_components/paper-checkbox/paper-checkbox.html">
+  <link rel="import" href="bower_components/paper-icon-button/paper-icon-button.html">
+  <link rel="import" href="bower_components/paper-fab/paper-fab.html">
+  <link rel="import" href="bower_components/paper-tabs/paper-tabs.html">
+  <link rel="import" href="bower_components/paper-toast/paper-toast.html">
+  
+  <link rel="import" href="bower_components/iron-list/iron-list.html">
+  <link rel="import" href="bower_components/iron-ajax/iron-ajax.html">
+  <link rel="import" href="bower_components/iron-icons/iron-icons.html">
+  <link rel="import" href="bower_components/paper-card/paper-card.html">
+  <style>
+    paper-card {
+      width: 100%;
+      max-width: 400px;
+      background-color: beige;
+    }
+    html, body {
+      height: 100%;
+      width: 100%;
+    }
+    section {
+      height: calc(100% - 104px);
+      width: calc(100% - 44px);
+    }
+    canvas {
+      border-color: black;
+      border-width: 1px;
+      border-style: solid;
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body unresolved>
+  <paper-toolbar>
+    <paper-icon-button icon="menu"></paper-icon-button>
+    <span class="flex">드로잉 퀴즈</span>
+    <paper-fab icon="add"></paper-fab>
+  </paper-toolbar>
+
+  <!--<section>-->
+  <!--  <template is="dom-bind">-->
+  <!--    <iron-ajax url="data.json" last-response="{{data}}" auto></iron-ajax>-->
+  <!--    <iron-list items="[[data]]" as="item">-->
+  <!--      <template>-->
+  <!--        <paper-card>-->
+  <!--          <div class="card-content">-->
+  <!--            <template is="dom-if" if="[[!item.enable]]">-->
+  <!--              <iron-icon icon="icons:clear"></iron-icon>-->
+  <!--            </template>-->
+  <!--            <template is="dom-if" if="[[item.enable]]">-->
+  <!--              <iron-icon icon="icons:check"></iron-icon>-->
+  <!--            </template>-->
+  <!--            [[item.title]]-->
+  <!--            [[item.userCount]] / [[item.maximumUser]]-->
+  <!--          </div>-->
+  <!--        </paper-card>-->
+  <!--      </template>-->
+  <!--    </iron-list>-->
+  <!--  </template>-->
+  <!--</section>-->
+  
+  <section>
+    <canvas id="canvas"></canvas>
+  </section>
+  <script src="paper-full.min.js"></script>
+  <script type="text/paperscript" canvas="canvas">
+  
+    var canvas = document.querySelector('canvas');
+    var rect = canvas.parentNode.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+    
+    var path;
+    
+    var textItem = new PointText({
+    	content: 'Click and drag to draw a line.',
+    	point: new Point(20, 30),
+    	fillColor: 'black',
+    });
+    
+    function onMouseDown(event) {
+    	// If we produced a path before, deselect it:
+    	if (path) {
+    		path.selected = false;
+    	}
+    
+    	// Create a new path and set its stroke color to black:
+    	path = new Path({
+    		segments: [event.point],
+    		strokeColor: 'black',
+    		// Select the path, so we can see its segment points:
+    		fullySelected: false
+    	});
+    	
+    	onMouseDrag(event);
+    }
+    
+    // While the user drags the mouse, points are added to the path
+    // at the position of the mouse:
+    function onMouseDrag(event) {
+    	path.add(event.point);
+    
+    	// Update the content of the text item to show how many
+    	// segments it has:
+    	textItem.content = 'Segment count: ' + path.segments.length;
+    }
+    
+    // When the mouse is released, we simplify the path:
+    function onMouseUp(event) {
+    	var segmentCount = path.segments.length;
+    
+    	// When the mouse is released, simplify it:
+    	path.simplify(10);
+    
+    	// Select the path, so we can see its segments:
+    	path.fullySelected = false;
+    
+    	var newSegmentCount = path.segments.length;
+    	var difference = segmentCount - newSegmentCount;
+    	var percentage = 100 - Math.round(newSegmentCount / segmentCount * 100);
+    	textItem.content = difference + ' of the ' + segmentCount + ' segments were removed. Saving ' + percentage + '%';
+    }
+</script>
+  <script src="main.js"></script>
+</body>
+</html>

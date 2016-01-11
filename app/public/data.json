@@ -1,0 +1,5 @@
+[
+  {"title": "스케치퀴즈!",  "type": "일반", "userCount": 5, "maximumUser": 8, "enable": true,   "order": "랜덤", "isLocked": false, "password": ""},
+  {"title": "11살만",       "type": "일반", "userCount": 2, "maximumUser": 8, "enable": true,   "order": "정답", "isLocked": false, "password": ""},
+  {"title": "자유그림방",   "type": "자유", "userCount": 8, "maximumUser": 8, "enable": false,  "order": "순차", "isLocked": true, "password": ""}
+]
