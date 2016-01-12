@@ -1,0 +1,19 @@
+<template is="dom-bind">
+  <iron-ajax url="data.json" last-response="{{data}}" auto></iron-ajax>
+  <iron-list items="[[data]]" as="item">
+    <template>
+      <paper-card>
+        <div class="card-content">
+          <template is="dom-if" if="[[!item.enable]]">
+            <iron-icon icon="icons:clear"></iron-icon>
+          </template>
+          <template is="dom-if" if="[[item.enable]]">
+            <iron-icon icon="icons:check"></iron-icon>
+          </template>
+          [[item.title]]
+          [[item.userCount]] / [[item.maximumUser]]
+        </div>
+      </paper-card>
+    </template>
+  </iron-list>
+</template>

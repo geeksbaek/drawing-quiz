@@ -1,0 +1,81 @@
+<dom-module id="drawing-quiz-canvas">
+
+  <template>
+    <style>
+      canvas {
+        
+      }
+    </style>
+    <div class="horizontal center-justified layout">
+      <canvas id="canvas"></canvas>
+    </div>
+  </template>
+
+  <script src="/scripts/paper-full.min.js"></script>
+  <script>
+    // element registration
+    Polymer({
+      is: "drawing-quiz-canvas",
+
+      // add properties and methods on the element's prototype
+
+      properties: {
+        // declare properties for the element's public API
+        greeting: {
+          type: String,
+          value: "Hello!"
+        }
+      },
+      ready: function() {
+        var canvas = document.querySelector('#canvas');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // paper.install(window);
+        paper.setup(canvas);
+        
+        var path;
+        var tool = new paper.Tool();
+        
+        var color = '#E4141B';
+        var width = 5;
+        var opacity = 1;
+        var isDashArray = false;
+
+        tool.onMouseDown = function(event) {
+          // Create a new path and set its stroke color to black:
+          path = new paper.Path({
+            segments: [event.point],
+            strokeColor: color,
+            strokeWidth: width,
+            strokeCap: 'round',
+            strokeJoin: 'round',
+            opacity: opacity,
+            dashArray: [width, width * (isDashArray ? 2 : 0)],
+          });
+          path.add(event.point);
+          
+          new paper.Path.Circle({
+            center: event.point,
+            fillColor: color,
+            radius: width / 2,
+            opacity: opacity,
+          });
+        }
+
+        // While the user drags the mouse, points are added to the path
+        // at the position of the mouse:
+        tool.onMouseDrag = function(event) {
+          path.add(event.point);
+        }
+
+        // When the mouse is released, we simplify the path:
+        tool.onMouseUp = function(event) {
+          // When the mouse is released, simplify it:
+          path.simplify(10);
+        }
+      }
+    });
+  </script>
+
+</dom-module>
