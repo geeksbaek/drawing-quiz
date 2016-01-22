@@ -1,19 +1,73 @@
-<template is="dom-bind">
-  <iron-ajax url="data.json" last-response="{{data}}" auto></iron-ajax>
-  <iron-list items="[[data]]" as="item">
-    <template>
-      <paper-card>
-        <div class="card-content">
-          <template is="dom-if" if="[[!item.enable]]">
-            <iron-icon icon="icons:clear"></iron-icon>
-          </template>
-          <template is="dom-if" if="[[item.enable]]">
-            <iron-icon icon="icons:check"></iron-icon>
-          </template>
-          [[item.title]]
-          [[item.userCount]] / [[item.maximumUser]]
-        </div>
-      </paper-card>
-    </template>
-  </iron-list>
-</template>
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
+
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+
+<dom-module id="drawing-quiz-lobby">
+
+  <template>
+    <style is="custom-style">
+      .container {
+        margin: 0 auto;
+        padding: 8px;
+        max-width: 600px;
+      }
+      
+      paper-card {
+        display: inline-block;
+        margin-bottom: 8px;
+        width: 100%;
+        cursor: default;
+        --paper-card-header-text: {
+          font-size: 18px;
+        }
+      }
+    </style>
+    
+    <div class="container">
+      <template is="dom-repeat" id="menu" items="{{rooms}}" as="room">
+        <paper-card heading="{{room.title}}">
+          <!--<div class="card-content">
+            <span>{{room.type}}</span> 
+            <span>{{room.userCount}}</span> 
+            <span>{{room.maximumUser}}</span> 
+            <span>{{room.enable}}</span> 
+            <span>{{room.order}}</span> 
+            <span>{{room.isLocked}}</span>
+          </div>-->
+        </paper-card>
+      </template>
+    </div>
+    
+  </template>
+  <script>
+    Polymer({
+      is: "drawing-quiz-lobby",
+      properties: {
+        rooms: {
+          type: Array,
+          value: [
+            {"title": "스케치퀴즈!",  "type": "일반", "userCount": 5, "maximumUser": 8, "enable": true,   "order": "랜덤", "isLocked": false, "password": ""},
+            {"title": "11살만",       "type": "일반", "userCount": 2, "maximumUser": 8, "enable": true,   "order": "정답", "isLocked": false, "password": ""},
+            {"title": "자유그림방",   "type": "자유", "userCount": 7, "maximumUser": 7, "enable": false,  "order": "순차", "isLocked": false, "password": ""},
+            {"title": "자유그림방",   "type": "일반", "userCount": 3, "maximumUser": 3, "enable": false,  "order": "순차", "isLocked": false, "password": ""},
+            {"title": "자유그림방",   "type": "일반", "userCount": 4, "maximumUser": 4, "enable": false,  "order": "순차", "isLocked": true, "password": "1234"},
+            {"title": "자유그림방",   "type": "일반", "userCount": 3, "maximumUser": 6, "enable": true,  "order": "정답", "isLocked": false, "password": ""},
+            {"title": "자유그림방",   "type": "일반", "userCount": 4, "maximumUser": 4, "enable": false,  "order": "순차", "isLocked": false, "password": ""},
+            {"title": "자유그림방",   "type": "자유", "userCount": 3, "maximumUser": 4, "enable": true,  "order": "정답", "isLocked": false, "password": ""},
+            {"title": "자유그림방",   "type": "일반", "userCount": 8, "maximumUser": 8, "enable": false,  "order": "순차", "isLocked": false, "password": ""},
+            {"title": "자유그림방",   "type": "일반", "userCount": 2, "maximumUser": 3, "enable": true,  "order": "랜덤", "isLocked": true, "password": "qwe"},
+            {"title": "자유그림방",   "type": "일반", "userCount": 6, "maximumUser": 6, "enable": false,  "order": "순차", "isLocked": false, "password": ""},
+            {"title": "자유그림방",   "type": "일반", "userCount": 6, "maximumUser": 7, "enable": true,  "order": "정답", "isLocked": false, "password": ""},
+            {"title": "자유그림방",   "type": "일반", "userCount": 7, "maximumUser": 7, "enable": false,  "order": "정답", "isLocked": false, "password": ""},
+            {"title": "자유그림방",   "type": "일반", "userCount": 2, "maximumUser": 3, "enable": true,  "order": "정답", "isLocked": false, "password": ""},
+            {"title": "자유그림방",   "type": "일반", "userCount": 6, "maximumUser": 6, "enable": false,  "order": "순차", "isLocked": false, "password": ""},
+            {"title": "자유그림방",   "type": "일반", "userCount": 4, "maximumUser": 8, "enable": true,  "order": "랜덤", "isLocked": false, "password": ""},
+          ] 
+        }
+      }
+    });
+  </script>
+
+</dom-module>

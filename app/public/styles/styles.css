@@ -1,7 +1,8 @@
 @import url("http://fonts.googleapis.com/earlyaccess/nanumgothic.css");
+@import url("https://fonts.googleapis.com/css?family=Bitter|Raleway");
 
 body {
-  font-family: Roboto, 'Nanum Gothic';
+  font-family: 'Bitter', 'Nanum Gothic';
   color: #333;
   margin: 0;
   -webkit-user-select: none;
@@ -42,13 +43,13 @@ paper-button[right] {
 paper-checkbox {
   margin-left: 1em;
 }
-
+/*
 paper-fab {
   position: absolute !important;
   top: 35px;
   right: 1em;
   z-index: 1;
-}
+}*/
 
 paper-tabs {
   background-color: #5677fc;

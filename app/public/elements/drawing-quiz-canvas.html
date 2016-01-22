@@ -1,80 +1,224 @@
+<link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../bower_components/iron-media-query/iron-media-query.html">
+
+<link rel="import" href="../bower_components/neon-animation/neon-animatable-behavior.html">
+<link rel="import" href="../bower_components/neon-animation/animations/slide-from-left-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
+
+<link rel="import" href="../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
+
 <dom-module id="drawing-quiz-canvas">
 
   <template>
-    <style>
-      canvas {
-        
+    <style is="custom-style">
+      #wrap {
+        position: relative;
+        width: 90%;
+        height: 90%;
+      }
+      
+      #mainCanvas, #tempCanvas {
+        position: absolute;
+        left: 0px;
+        top: 0px;
+      }
+      
+      #openPalette {
+        position: absolute;
+        right: 1rem;
+        top: 1rem;
+      }
+      
+      #clear {
+        position: absolute;
+        right: 1rem;
+        bottom: 1rem;
+      }
+      
+      paper-fab.orange {
+        --paper-fab-background: var(--paper-orange-500);
+        --paper-fab-keyboard-focus-background: var(--paper-orange-500);
       }
     </style>
-    <div class="horizontal center-justified layout">
-      <canvas id="canvas"></canvas>
+    
+    <!--<iron-media-query query="(max-width: 421px)" query-matches="{{mobileMatch}}"></iron-media-query>-->
+    
+    <div class="horizontal center center-justified layout">
+      <div id="wrap">
+        <canvas id="mainCanvas"></canvas>
+        <canvas id="tempCanvas" on-down="handleStart" on-track="handleMove" on-up="handleEnd"></canvas>
+      </div>
+      <paper-fab id="openPalette" class="orange" icon="image:color-lens" title="more" on-tap="showSettings"></paper-fab>
+      <paper-fab id="clear" class="orange" icon="icons:refresh" title="clear" mini on-tap="clear"></paper-fab>
     </div>
   </template>
 
-  <script src="/scripts/paper-full.min.js"></script>
   <script>
     // element registration
     Polymer({
       is: "drawing-quiz-canvas",
-
-      // add properties and methods on the element's prototype
-
+      
+      behaviors: [Polymer.NeonAnimatableBehavior],
+      
       properties: {
-        // declare properties for the element's public API
-        greeting: {
-          type: String,
-          value: "Hello!"
+        animationConfig: {
+          value: function() {
+            return {
+              'entry': {
+                name: 'slide-from-left-animation',
+                node: this,
+              },
+              'exit': {
+                name: 'fade-out-animation',
+                node: this,
+              }
+            }
+          }
+        },
+        
+        // mobileMatch: {
+        //   observer: 'resize',
+        // },
+        
+        brush_01: {
+          value: {
+            lineWidth: 5,
+            lineJoin: 'round',
+            lineCap: 'round',
+            strokeStyle: '#E4141B',
+            fillStyle: '#E4141B',
+            shadowOffsetX: 2,
+            shadowOffsetY: 2,
+            shadowBlur: 2,
+            shadowColor: "rgba(0, 0, 0, 0.5)",
+            isLineDash: false,
+            isEraser: false,
+          }
+        },
+        
+        canvas: Object,
+        ctx: Object,
+        tmp_canvas: Object,
+        tmp_ctx: Object,
+        mouse: {
+          type: Object,
+          value: {}
+        },
+        point: {
+          type: Array,
+          value: []
+        },
+        isDrawing: {
+          type: Boolean,
+          value: false
+        },
+      },
+      
+      ready: function() {
+        this.canvas = this.$.mainCanvas;
+        this.ctx = this.canvas.getContext('2d');
+        
+        this.tmp_canvas = this.$.tempCanvas;
+        this.tmp_ctx = this.tmp_canvas.getContext('2d');
+        
+        // this.canvas.width = parseInt(getComputedStyle(this.canvas.parentElement).width);
+        // this.canvas.height = parseInt(getComputedStyle(this.canvas.parentElement).height);
+        
+        // this.tmp_canvas.width = parseInt(getComputedStyle(this.canvas.parentElement).width);
+        // this.tmp_canvas.height = parseInt(getComputedStyle(this.canvas.parentElement).height);
+        
+        this.canvas.width = window.innerWidth * 0.9;
+        this.canvas.height = window.innerHeight * 0.9;
+        
+        this.tmp_canvas.width = window.innerWidth * 0.9;
+        this.tmp_canvas.height = window.innerHeight * 0.9;
+        
+        this.setBrush(this.brush_01);
+      },
+      
+      showSettings: function() {
+        this.fire('show-settings');
+      },
+      
+      clear: function() {
+        this.ctx.clearRect(0, 0, this.$.mainCanvas.width, this.$.mainCanvas.height);
+      },
+      
+      setBrush: function(brush) {
+        this.tmp_ctx.lineWidth = brush.lineWidth;
+        this.tmp_ctx.lineJoin = brush.lineJoin;
+        this.tmp_ctx.lineCap = brush.lineCap;
+        this.tmp_ctx.strokeStyle = brush.strokeStyle;
+        this.tmp_ctx.fillStyle = brush.fillStyle;
+        this.tmp_ctx.shadowOffsetX = brush.shadowOffsetX; 
+        this.tmp_ctx.shadowOffsetY = brush.shadowOffsetY; 
+        this.tmp_ctx.shadowBlur = brush.shadowBlur; 
+        this.tmp_ctx.shadowColor = brush.shadowColor;
+        
+        if(brush.isLineDash && !brush.isEraser) {
+          this.tmp_ctx.setLineDash([brush.lineWidth, brush.lineWidth * 2 ]);
+        }
+        
+        if(brush.isEraser) {
+          this.ctx.globalCompositeOperation = 'xor';
+        } else {
+          this.ctx.globalCompositeOperation = 'source-over';
         }
       },
-      ready: function() {
-        var canvas = document.querySelector('#canvas');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+      
+      handleMove: function(e) {
+        if (!this.isDrawing) return;
         
-        // paper.install(window);
-        paper.setup(canvas);
+        this.mouse.x = e.detail.x - e.target.getBoundingClientRect().left;
+        this.mouse.y = e.detail.y - e.target.getBoundingClientRect().top;
         
-        var path;
-        var tool = new paper.Tool();
+        this.point.push({x: this.mouse.x, y: this.mouse.y});
         
-        var color = '#E4141B';
-        var width = 5;
-        var opacity = 1;
-        var isDashArray = false;
-
-        tool.onMouseDown = function(event) {
-          // Create a new path and set its stroke color to black:
-          path = new paper.Path({
-            segments: [event.point],
-            strokeColor: color,
-            strokeWidth: width,
-            strokeCap: 'round',
-            strokeJoin: 'round',
-            opacity: opacity,
-            dashArray: [width, width * (isDashArray ? 2 : 0)],
-          });
-          path.add(event.point);
+        this.tmp_ctx.clearRect(0, 0, this.tmp_canvas.width, this.tmp_canvas.height);
+        
+        if (this.point.length < 3) {
+          this.tmp_ctx.beginPath();
+          this.tmp_ctx.arc(this.point[0].x, this.point[0].y, this.tmp_ctx.lineWidth / 2, 0, Math.PI * 2, !0);
+          this.tmp_ctx.fill();
+          this.tmp_ctx.closePath();
           
-          new paper.Path.Circle({
-            center: event.point,
-            fillColor: color,
-            radius: width / 2,
-            opacity: opacity,
-          });
+          return;
         }
-
-        // While the user drags the mouse, points are added to the path
-        // at the position of the mouse:
-        tool.onMouseDrag = function(event) {
-          path.add(event.point);
+        
+        this.tmp_ctx.beginPath();
+        this.tmp_ctx.moveTo(this.point[0].x, this.point[0].y);
+        
+        for (var i = 1; i < this.point.length - 2; i++) {
+          var c = (this.point[i].x + this.point[i + 1].x) / 2;
+          var d = (this.point[i].y + this.point[i + 1].y) / 2;
+          
+          this.tmp_ctx.quadraticCurveTo(this.point[i].x, this.point[i].y, c, d);
         }
-
-        // When the mouse is released, we simplify the path:
-        tool.onMouseUp = function(event) {
-          // When the mouse is released, simplify it:
-          path.simplify(10);
-        }
-      }
+        
+        // For the last 2 points
+        this.tmp_ctx.quadraticCurveTo(
+          this.point[i].x,
+          this.point[i].y,
+          this.point[i + 1].x,
+          this.point[i + 1].y
+        );
+        
+        this.tmp_ctx.stroke();
+      },
+      
+      handleStart: function(e) {
+        this.isDrawing = true;
+        this.handleMove(e);
+      },
+      
+      handleEnd: function() {
+        this.ctx.drawImage(this.tmp_canvas, 0, 0);
+        this.tmp_ctx.clearRect(0, 0, this.tmp_canvas.width, this.tmp_canvas.height);
+        this.isDrawing = false;
+        this.point = [];
+      },
     });
   </script>
 

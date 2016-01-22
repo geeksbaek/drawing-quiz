@@ -7,7 +7,8 @@
   "author": "",
   "private": true,
   "dependencies": {
-    "iron-elements": "PolymerElements/iron-elements#^1.0.0",
-    "paper-elements": "PolymerElements/paper-elements#^1.0.1"
+    "iron-elements": "PolymerElements/iron-elements",
+    "paper-elements": "PolymerElements/paper-elements",
+    "app-layout": "PolymerLabs/app-layout"
   }
 }
